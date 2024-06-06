@@ -1,0 +1,102 @@
+---
+title: "Logistic_Regression"
+author: "Akarin Luckanasub"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+#### This document demonstrates how to perform logistic regression on the mtcars dataset using the dplyr library for data manipulation. The goal is to predict the transmission type (am) based on the miles per gallon (mpg).
+
+### Data Preparation
+##### First, load the mtcars dataset and examine its structure.
+
+```{r}
+# Load mtcars dataset and examine its structure
+head(mtcars)
+str(mtcars)
+```
+
+#### Convert the am variable (transmission type) to a factor with levels "Auto" and "Manual".
+
+```{r}
+# Convert am to a factor
+mtcars$am <- factor(mtcars$am, 
+                    levels = c(0, 1), 
+                    labels = c("Auto", "Manual"))
+
+# Check the class and distribution of the am variable
+class(mtcars$am)
+table(mtcars$am)
+```
+
+### Data Splitting
+##### Randomly split the data into training (70%) and test (30%) sets.
+
+```{r}
+# Set seed for reproducibility
+set.seed(42)
+
+# Number of rows in the dataset
+n <- nrow(mtcars)
+
+# Generate random indices for training data (70% of the data)
+id <- sample(1:n, size = n * 0.7)
+
+# Create training and test datasets
+train_data <- mtcars[id, ]
+test_data <- mtcars[-id, ]
+```
+
+### Train the Logistic Regression Model
+##### Train the logistic regression model using the glm function, predicting the am variable based on mpg.
+
+```{r}
+# Train logistic regression model
+Logit_model <- glm(am ~ mpg, 
+                   data = train_data,
+                   family = "binomial")
+
+# Summary of the model
+summary(Logit_model)
+```
+
+### Model Predictions and Evaluation
+Training Data
+##### Make predictions on the training data and calculate the accuracy.
+
+```{r}
+# Predict on training data
+P_train <- predict(Logit_model, type = "response")
+
+# Convert probabilities to class labels
+train_data$pred <- ifelse(P_train >= 0.5, "Manual", "Auto")
+
+# Calculate accuracy on training data
+train_accuracy <- mean(train_data$am == train_data$pred)
+train_accuracy
+```
+
+### Test Data
+##### Make predictions on the test data and calculate the accuracy.
+
+```{r}
+# Predict on test data
+p_test <- predict(Logit_model, newdata = test_data, type = "response")
+
+# Convert probabilities to class labels
+test_data$pred <- ifelse(p_test >= 0.5, "Manual", "Auto")
+
+# Calculate accuracy on test data
+test_accuracy <- mean(test_data$am == test_data$pred)
+test_accuracy
+```
+
+### Conclusion
+##### The logistic regression model was trained to predict the transmission type (am) based on the miles per gallon (mpg). The accuracy of the model on the training data is r train_accuracy, and the accuracy on the test data is r test_accuracy.
+
+
